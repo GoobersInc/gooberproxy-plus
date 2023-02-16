@@ -7,13 +7,23 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.69"
-azalea = { git = "https://github.com/mat-1/azalea.git", branch = "1.19.2", version = "0.6.0" }
-azalea-chat = { git = "https://github.com/mat-1/azalea.git", branch = "1.19.2", version = "0.6.0" }
-azalea-protocol = { git = "https://github.com/mat-1/azalea.git", branch = "1.19.2", version = "0.6.0" }
+azalea = { version = "0.6.0", path = "azalea/azalea" }
+azalea-auth = { version = "0.6.0", path = "azalea/azalea-auth" }
+azalea-chat = { version = "0.6.0", path = "azalea/azalea-chat" }
+azalea-core = { version = "0.6.0", path = "azalea/azalea-core" }
+azalea-crypto = { version = "0.6.0", path = "azalea/azalea-crypto" }
+azalea-nbt = { version = "0.6.0", path = "azalea/azalea-nbt" }
+azalea-protocol = { version = "0.6.0", path = "azalea/azalea-protocol" }
+azalea-registry = { version = "0.6.0", path = "azalea/azalea-registry" }
 clap = { version = "4.1.4", features = ["derive"] }
 serde = { version = "1.0.152", features = ["derive"] }
+thiserror = "1.0.38"
 tokio = { version = "1.25.0", features = ["full"] }
 toml = "0.7.2"
 tracing = "0.1.37"
 tracing-futures = { version = "0.2.5", features = ["tokio"] }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+openssl = "0.10"
+
+[features]
+"openssl-vendored" = ["openssl/vendored"]

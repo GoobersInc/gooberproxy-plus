@@ -7,6 +7,7 @@ use crate::{app::App, config::Config};
 mod app;
 mod config;
 mod conn;
+mod join;
 mod listener;
 mod logging;
 

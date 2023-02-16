@@ -19,9 +19,8 @@ impl App {
 
         let mut conn: ServerHandshakeConn = Connection::wrap(socket);
 
-        let handshake = match conn.read().await.context("Failed to read handshake")? {
-            ServerboundHandshakePacket::ClientIntention(handshake) => handshake,
-        };
+        let ServerboundHandshakePacket::ClientIntention(handshake) =
+            conn.read().await.context("Failed to read handshake")?;
         debug!("Handshake: {:?}", handshake);
         match handshake.intention {
             HandshakeIntention::Status => {

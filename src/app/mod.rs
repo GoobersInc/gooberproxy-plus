@@ -5,6 +5,7 @@ use tracing::info;
 use crate::config::Config;
 
 mod conn_handler;
+mod keep_alive;
 
 #[derive(Clone)]
 pub struct App {

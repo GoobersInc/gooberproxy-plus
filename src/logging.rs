@@ -10,5 +10,5 @@ pub fn setup() -> Result<(), SetGlobalDefaultError> {
 
     tracing::subscriber::set_global_default(subscriber)?;
 
-    return Ok(());
+    Ok(())
 }

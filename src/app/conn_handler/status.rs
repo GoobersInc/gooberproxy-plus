@@ -10,13 +10,13 @@ use azalea_protocol::packets::{
     },
     PROTOCOL_VERSION,
 };
-use tracing::debug;
+use tracing::info;
 
 use crate::{app::App, conn::ServerStatusConn};
 
 impl App {
     pub async fn handle_status(&self, mut conn: ServerStatusConn) -> Result<()> {
-        debug!("Handling status request");
+        info!("Handling status request");
 
         let _ = match conn.read().await.context("Failed to read status request")? {
             ServerboundStatusPacket::StatusRequest(request) => request,
