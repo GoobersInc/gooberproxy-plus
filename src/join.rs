@@ -1,7 +1,6 @@
-use anyhow::{anyhow, Result};
-use azalea::Account;
 use azalea_auth::{game_profile::GameProfile, sessionserver::ClientSessionServerError};
 use azalea_chat::FormattedText;
+use azalea_client::Account;
 use azalea_protocol::{
     connect::{Connection, ConnectionError},
     packets::{
@@ -22,8 +21,14 @@ use crate::conn::{ClientGameConn, ClientLoginConn};
 
 #[derive(Error, Debug)]
 pub enum JoinServerError {
-    #[error("Disconnected: {0}")]
+    #[error("disconnected: {0}")]
     Disconnected(FormattedText),
+
+    #[error("invalid account: account has no access token or UUID")]
+    InvalidAccount,
+
+    #[error("unexpected packet: {0:?}")]
+    UnexpectedPacket(ClientboundLoginPacket),
 
     #[error(transparent)]
     Connection(#[from] ConnectionError),
@@ -36,19 +41,18 @@ pub enum JoinServerError {
 
     #[error(transparent)]
     SessionServer(#[from] ClientSessionServerError),
-
-    #[error(transparent)]
-    Other(#[from] anyhow::Error),
 }
 
 /// Start a connection, authenticate and join the server
 /// without sending the encryption response
+///
+/// This function assumes that `account` has an access token and UUID
 pub async fn almost_join_server(
     addr: &SocketAddr,
     account: &Account,
 ) -> Result<(ClientLoginConn, ServerboundKeyPacket, [u8; 16]), JoinServerError> {
     if account.access_token.is_none() || account.uuid.is_none() {
-        return Err(anyhow!("Account needs to have both an access token and UUID").into());
+        return Err(JoinServerError::InvalidAccount);
     }
 
     let mut conn = Connection::new(addr).await?;
@@ -65,7 +69,7 @@ pub async fn almost_join_server(
     )
     .await?;
 
-    // login
+    // Hello!
     let mut conn = conn.login();
     conn.write(
         ServerboundHelloPacket {
@@ -77,27 +81,32 @@ pub async fn almost_join_server(
     )
     .await?;
 
+    // Hello?
     let encryption_request = match conn.read().await? {
         ClientboundLoginPacket::Hello(packet) => packet,
         ClientboundLoginPacket::LoginDisconnect(packet) => {
-            return Err(anyhow!(format!("Disconnected: {}", packet.reason)).into());
+            return Err(JoinServerError::Disconnected(packet.reason));
         }
         packet => {
-            return Err(anyhow!("Unexpected packet:\n{:#?}", packet).into());
+            return Err(JoinServerError::UnexpectedPacket(packet));
         }
     };
 
     // Lettuce do le auth (auth so goofy)
-    let e =
+    // ↑ this file has been copied so much from project to project
+    // that I don't even know who wrote this anymore
+    let encryption_result =
         azalea_crypto::encrypt(&encryption_request.public_key, &encryption_request.nonce).unwrap();
 
-    let secret_key = e.secret_key.to_owned();
+    // Very secur (I hope)
+    let secret_key = encryption_result.secret_key.to_owned();
 
+    // Here we actually do the auth smh
     let access_token = { account.access_token.as_ref().unwrap().lock().to_owned() };
     conn.authenticate(
-        &access_token, // it's safe here because we've already checked
+        &access_token,
         &account.uuid.unwrap(),
-        secret_key, // but I clone it here ._.
+        secret_key,
         &encryption_request,
     )
     .await?;
@@ -105,8 +114,8 @@ pub async fn almost_join_server(
     Ok((
         conn,
         ServerboundKeyPacket {
-            key_bytes: e.encrypted_public_key,
-            nonce_or_salt_signature: NonceOrSaltSignature::Nonce(e.encrypted_nonce),
+            key_bytes: encryption_result.encrypted_public_key,
+            nonce_or_salt_signature: NonceOrSaltSignature::Nonce(encryption_result.encrypted_nonce),
         },
         secret_key,
     ))
@@ -122,19 +131,21 @@ pub async fn finish_joining_server(
     conn.write(packet.get()).await?;
     conn.set_encryption_key(sk);
 
+    // While this could technically be abused to cause the client to
+    // loop forever, it would have to be a very targeted attack
     loop {
         match conn.read().await? {
-            ClientboundLoginPacket::GameProfile(p) => {
-                return Ok((conn.game(), p.game_profile));
+            ClientboundLoginPacket::GameProfile(packet) => {
+                return Ok((conn.game(), packet.game_profile));
             }
-            ClientboundLoginPacket::LoginCompression(p) => {
-                conn.set_compression_threshold(p.compression_threshold);
+            ClientboundLoginPacket::LoginCompression(packet) => {
+                conn.set_compression_threshold(packet.compression_threshold);
             }
-            ClientboundLoginPacket::LoginDisconnect(p) => {
-                return Err(JoinServerError::Disconnected(p.reason));
+            ClientboundLoginPacket::LoginDisconnect(packet) => {
+                return Err(JoinServerError::Disconnected(packet.reason));
             }
-            p => {
-                return Err(anyhow!("Unexpected packet:\n{:#?}", p).into());
+            packet => {
+                return Err(JoinServerError::UnexpectedPacket(packet));
             }
         }
     }
@@ -149,6 +160,7 @@ pub async fn join_server(
     finish_joining_server(conn, packet, sk).await
 }
 
+/// Send a handshake and switch to login
 pub async fn say_hello(
     addr: &SocketAddr,
     hello: ServerboundHelloPacket,
