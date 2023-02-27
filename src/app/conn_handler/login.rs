@@ -1,6 +1,6 @@
 use anyhow::{bail as yeet, Context, Result};
-use azalea::Account;
 use azalea_chat::{text_component::TextComponent, FormattedText};
+use azalea_client::Account;
 use azalea_protocol::packets::login::{
     clientbound_login_disconnect_packet::ClientboundLoginDisconnectPacket, ServerboundLoginPacket,
 };
