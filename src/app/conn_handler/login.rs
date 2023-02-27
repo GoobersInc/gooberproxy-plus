@@ -1,6 +1,9 @@
 use anyhow::{bail as yeet, Context, Result};
 use azalea::Account;
-use azalea_protocol::packets::login::ServerboundLoginPacket;
+use azalea_chat::{text_component::TextComponent, FormattedText};
+use azalea_protocol::packets::login::{
+    clientbound_login_disconnect_packet::ClientboundLoginDisconnectPacket, ServerboundLoginPacket,
+};
 use tracing::{debug, info, warn};
 
 use crate::{
@@ -21,7 +24,16 @@ impl App {
         };
         debug!("Hello: {:?}", hello);
 
-        let conn1 = conn1.unwrap()?;
+        if hello.username != self.config.player {
+            warn!("Kicking unknown player {}", hello.username);
+            let kick_packet = ClientboundLoginDisconnectPacket {
+                reason: FormattedText::Text(TextComponent::new(String::from("goober"))),
+            };
+            conn1.write(kick_packet.get()).await?;
+            return Ok(());
+        }
+
+        let conn1 = conn1.unwrap()?; // ← will not panic
 
         let conn2 = say_hello(&self.config.server_addr, hello).await?.unwrap()?; // ← will not panic
 

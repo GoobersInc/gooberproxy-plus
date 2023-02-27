@@ -11,6 +11,7 @@ pub struct Config {
     pub listen_addr: SocketAddr,
     pub server_addr: SocketAddr,
     pub account: String,
+    pub player: String,
     pub motd: FormattedText,
 }
 
@@ -34,6 +35,7 @@ impl Default for Config {
             listen_addr: SocketAddr::new(IpAddr::from([0, 0, 0, 0]), 25565),
             server_addr: SocketAddr::new(IpAddr::from([127, 0, 0, 1]), 25566),
             account: "goober@example.com".to_string(),
+            player: String::from("Honbra"),
             motd: FormattedText::Text(TextComponent::new(
                 "Goobers Inc. Secret Test Server (real)".to_string(),
             )),
