@@ -15,9 +15,12 @@ use tracing::info;
 use crate::{app::App, conn::ServerStatusConn};
 
 impl App {
+    /// Handles a client that has specified it wants to receive a status
+    /// response (server list ping)
     pub async fn handle_status(&self, mut conn: ServerStatusConn) -> Result<()> {
         info!("Handling status request");
 
+        // Read the request
         let _ = match conn.read().await.context("Failed to read status request")? {
             ServerboundStatusPacket::StatusRequest(request) => request,
             _ => {
@@ -25,6 +28,7 @@ impl App {
             }
         };
 
+        // Send the response
         let status_response = ClientboundStatusResponsePacket {
             description: FormattedText::Text(TextComponent::new(
                 "Goobers Inc. secret test server (real)".to_string(),
@@ -46,6 +50,7 @@ impl App {
             .await
             .context("Failed to write status response")?;
 
+        // Read the request
         let ping_request = match conn.read().await.context("Failed to read ping request")? {
             ServerboundStatusPacket::PingRequest(ping_request) => ping_request,
             _ => {
@@ -53,6 +58,7 @@ impl App {
             }
         };
 
+        // Send the response
         let ping_response = ClientboundPongResponsePacket {
             time: ping_request.time,
         };

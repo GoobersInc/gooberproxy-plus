@@ -10,14 +10,20 @@ impl App {
         loop {
             match listener.accept().await {
                 Ok((socket, _)) => {
+                    // Get the remote address
                     let remote = match socket.peer_addr() {
                         Ok(addr) => addr,
                         Err(e) => {
+                            // ??? what
                             error!("Failed to get peer address: {}", e);
                             continue;
                         }
                     };
+
+                    // Create a fancy logging context
                     let span = span!(Level::TRACE, "Connection", remote = %remote);
+
+                    // Yeet it off a cliff to teach it how to fly
                     let clone = self.clone();
                     tokio::spawn(
                         async move {
@@ -29,6 +35,7 @@ impl App {
                     );
                 }
                 Err(e) => {
+                    // Again, ??? what
                     error!("Failed to accept connection: {}", e);
                 }
             }

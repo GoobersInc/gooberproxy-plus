@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
+use tracing::info;
 
 use crate::{app::App, config::Config};
 
@@ -31,7 +32,10 @@ async fn main() -> Result<()> {
     // Create a config file if it doesn't exist or if the user wants to overwrite it
     if !config_path.exists() || args.overwrite_config {
         if !config_path.exists() {
-            eprintln!("Config file does not exist, creating one with default values");
+            info!("Config file does not exist, creating one with default values and exiting");
+        }
+        if args.overwrite_config {
+            info!("Overwriting config file with default values and exiting");
         }
         let config = Config::default();
         config.save(&config_path).await?;

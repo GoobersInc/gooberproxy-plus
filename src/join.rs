@@ -43,18 +43,20 @@ pub enum JoinServerError {
     SessionServer(#[from] ClientSessionServerError),
 }
 
-/// Start a connection, authenticate and join the server
-/// without sending the encryption response
+/// Start a connection, authenticate and join the server without sending the
+/// encryption response
 ///
 /// This function assumes that `account` has an access token and UUID
 pub async fn almost_join_server(
     addr: &SocketAddr,
     account: &Account,
 ) -> Result<(ClientLoginConn, ServerboundKeyPacket, [u8; 16]), JoinServerError> {
+    // I warned you
     if account.access_token.is_none() || account.uuid.is_none() {
         return Err(JoinServerError::InvalidAccount);
     }
 
+    // Initialize the connection (real)
     let mut conn = Connection::new(addr).await?;
 
     // Handshake
@@ -121,8 +123,8 @@ pub async fn almost_join_server(
     ))
 }
 
-/// Finish joining the server by sending the encryption response
-/// and waiting for the game profile
+/// Finish joining the server by sending the encryption response and waiting for
+/// the game profile
 pub async fn finish_joining_server(
     mut conn: ClientLoginConn,
     packet: ServerboundKeyPacket,
@@ -179,8 +181,10 @@ pub async fn say_hello(
     )
     .await?;
 
+    // This is no laughing matter
     let mut conn = conn.login();
 
+    // Hello!
     conn.write(hello.get()).await?;
 
     Ok(conn)

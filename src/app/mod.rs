@@ -13,10 +13,12 @@ pub struct App {
 }
 
 impl App {
+    /// Initializes the app state (currently it only loads the config)
     pub async fn init(config: Config) -> Result<Self> {
         Ok(Self { config })
     }
 
+    /// The app's entrypoint with the config already loaded
     pub async fn run(&mut self) -> Result<()> {
         let listener = TcpListener::bind(&self.config.listen_addr)
             .await
