@@ -1,4 +1,0 @@
-[submodule "azalea"]
-	path = azalea
-	url = https://github.com/GoobersInc/azalea.git
-	branch = new

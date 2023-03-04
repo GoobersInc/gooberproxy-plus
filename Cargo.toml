@@ -7,14 +7,14 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.69"
-azalea-client = { version = "0.6.0", path = "azalea/azalea-client" }
-azalea-auth = { version = "0.6.0", path = "azalea/azalea-auth" }
-azalea-chat = { version = "0.6.0", path = "azalea/azalea-chat" }
-azalea-core = { version = "0.6.0", path = "azalea/azalea-core" }
-azalea-crypto = { version = "0.6.0", path = "azalea/azalea-crypto" }
-azalea-nbt = { version = "0.6.0", path = "azalea/azalea-nbt" }
-azalea-protocol = { version = "0.6.0", path = "azalea/azalea-protocol" }
-azalea-registry = { version = "0.6.0", path = "azalea/azalea-registry" }
+azalea-client = { version = "0.6.0", git = "https://github.com/GoobersInc/azalea.git", branch = "new" }
+azalea-auth = { version = "0.6.0", git = "https://github.com/GoobersInc/azalea.git", branch = "new" }
+azalea-chat = { version = "0.6.0", git = "https://github.com/GoobersInc/azalea.git", branch = "new" }
+azalea-core = { version = "0.6.0", git = "https://github.com/GoobersInc/azalea.git", branch = "new" }
+azalea-crypto = { version = "0.6.0", git = "https://github.com/GoobersInc/azalea.git", branch = "new" }
+azalea-nbt = { version = "0.6.0", git = "https://github.com/GoobersInc/azalea.git", branch = "new" }
+azalea-protocol = { version = "0.6.0", git = "https://github.com/GoobersInc/azalea.git", branch = "new" }
+azalea-registry = { version = "0.6.0", git = "https://github.com/GoobersInc/azalea.git", branch = "new" }
 clap = { version = "4.1.7", features = ["derive"] }
 serde = { version = "1.0.152", features = ["derive"] }
 thiserror = "1.0.38"

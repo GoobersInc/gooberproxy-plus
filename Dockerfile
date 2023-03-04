@@ -2,26 +2,25 @@ FROM rustlang/rust:nightly AS builder
 
 WORKDIR /build
 
-COPY ./src ./src
+RUN apt-get update && \
+    apt-get dist-upgrade -y && \
+    apt-get install -y musl-tools && \
+    rustup target add x86_64-unknown-linux-musl
+
 COPY ./Cargo.toml ./Cargo.toml
-COPY ./.gitmodules ./.gitmodules
-COPY ./.git ./.git
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./src ./src
 
-# Clone the git submodules
-RUN git submodule update --init --recursive
+RUN cargo build --release --target x86_64-unknown-linux-musl
 
-# Build your program for release
-RUN cargo build --release
-
-# Now make a new image with just the binary, using alpine
-FROM alpine:latest
+FROM scratch
 
 WORKDIR /app
 
 # Copy the binary from the builder image
-COPY --from=builder /build/target/release/gooberproxy-plus .
+COPY --from=builder /app/target/gooberproxy-plus .
 
 VOLUME /app/config/config.toml
 
 # Run the binary
-ENTRYPOINT ["./gooberproxy-plus --config_path /app/config/config.toml"]
+ENTRYPOINT ["/app/target/gooberproxy-plus --config_path /app/config/config.toml"]
