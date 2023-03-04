@@ -16,3 +16,5 @@ If Philipp won't shut down his proxy, I'll make my own proxy with hookers and bl
 
 This software is licensed under the "Anyone But Philipp DE"\
 (ABPDE) license, described in the `LICENSE` file. No other licenses may apply.
+
+Sponsored by LiveOvergoober
